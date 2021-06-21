@@ -15,6 +15,10 @@ public class TopKFrequent {
                 map.put(nums[i], 1);
             }
         }
+
+        for(Map.Entry<Integer, Integer> item : map.entrySet()) {
+
+        }
         PriorityQueue<int[]> queue = new PriorityQueue<>(new Comparator<int[]>() {
             @Override
             public int compare(int[] o1, int[] o2) {
