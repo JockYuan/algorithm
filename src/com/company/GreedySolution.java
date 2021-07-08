@@ -182,38 +182,39 @@ public class GreedySolution {
         }
 
         for (int j = ratings.length - 2; j >= 0; j--) { // 从右往左看
-            if (ratings[j] > ratings[j+1]) {
-                candys[j] = Math.max(candys[j], candys[j+1]+1); // 关键点, 判定上次值是否满足, 不满足使用右边值+1
+            if (ratings[j] > ratings[j + 1]) {
+                candys[j] = Math.max(candys[j], candys[j + 1] + 1); // 关键点, 判定上次值是否满足, 不满足使用右边值+1
             }
         }
 
-        int sum =0;
-        for(int n : candys) {
+        int sum = 0;
+        for (int n : candys) {
             sum += n;
         }
 
         return sum;
     }
-// 860. 柠檬水找零
+
+    // 860. 柠檬水找零
     public boolean lemonadeChange(int[] bills) {
         int five = 0;
         int ten = 0;
 
-        for(int n : bills) {
+        for (int n : bills) {
             switch (n) {
                 case 5:
                     five++;
                     break;
                 case 10:
-                    if(five <= 0) return false;
+                    if (five <= 0) return false;
                     five--;
                     ten++;
                     break;
                 case 20:
-                    if(five> 0 && ten>0) {
+                    if (five > 0 && ten > 0) {
                         five--;
                         ten--;
-                    } else if (five>=3){
+                    } else if (five >= 3) {
                         five -= 3;
                     } else {
                         return false;
@@ -229,8 +230,8 @@ public class GreedySolution {
         Arrays.sort(people, new Comparator<int[]>() {
             @Override
             public int compare(int[] o1, int[] o2) {
-                if(o1[0] > o2[0]) return -1;
-                if(o1[0] == o2[0]) {
+                if (o1[0] > o2[0]) return -1;
+                if (o1[0] == o2[0]) {
                     if (o1[1] < o2[1]) return -1;
                 }
                 return 0;
@@ -239,7 +240,7 @@ public class GreedySolution {
 
         List<int[]> res = new ArrayList<>();
 
-        for(int[] k: people) {
+        for (int[] k : people) {
             res.add(k[1], k);
         }
 
@@ -251,15 +252,15 @@ public class GreedySolution {
 
     public int findMinArrowShots(int[][] points) {
         if (points.length == 0) return 0;
-        Arrays.sort(points, Comparator.comparingInt(o->o[0]));
+        Arrays.sort(points, Comparator.comparingInt(o -> o[0]));
 
         int result = 1;
 
-        for(int i = 1; i<points.length;i++) {
-            if (points[i][0] > points[i-1][1]) {
+        for (int i = 1; i < points.length; i++) {
+            if (points[i][0] > points[i - 1][1]) {
                 result++;
             } else {
-                points[i][1] = Math.min(points[i-1][1], points[i][1]);
+                points[i][1] = Math.min(points[i - 1][1], points[i][1]);
             }
         }
         return result;
@@ -269,16 +270,61 @@ public class GreedySolution {
 
     public int eraseOverlapIntervals(int[][] intervals) {
         if (intervals.length == 0) return 0;
-        Arrays.sort(intervals, (o1, o2) -> Integer.compare(o1[1],o2[1]));
+        Arrays.sort(intervals, (o1, o2) -> Integer.compare(o1[1], o2[1]));
 
-        int count =1;
-        int end=intervals[0][1];
-        for(int i =1;i<intervals.length;i++) {
+        int count = 1;
+        int end = intervals[0][1];
+        for (int i = 1; i < intervals.length; i++) {
             if (end <= intervals[i][0]) {
                 count++;
                 end = intervals[i][1];
             }
         }
         return intervals.length - count;
+    }
+
+    // 763. 划分字母区间
+    public List<Integer> partitionLabels(String s) {
+        List<Integer> res = new ArrayList<>();
+
+        int[] map = new int[26];
+        char[] sArray = s.toCharArray();
+        for (int i = 0; i < s.length(); i++) {
+            map[sArray[i] - 'a'] = i;
+        }
+
+        int left = 0;
+        int right = 0;
+        for (int i = 0; i < s.length(); i++) {
+            right = map[sArray[i] - 'a'];
+            if (i == right) {
+                res.add(right - left + 1);
+                left = i + 1;
+            }
+        }
+
+        return res;
+    }
+
+    // 56. 合并区间
+
+    public int[][] merge(int[][] intervals) {
+        List<int[]> res = new ArrayList<>();
+
+        Arrays.sort(intervals, (o1, o2) -> Integer.compare(o1[0], o2[0]));
+        res.add(intervals[0]);
+        for (int i = 1; i < intervals.length; i++) {
+            int[] last = res.get(res.size()-1);
+            if (intervals[i][1] <= last[1]) { // 先判定当前右值是否小于已加入的最后项的右值, 若小于,跳过该轮, 表示已覆盖当前区间
+                continue;
+            } else if (intervals[i][0] <= last[1]){
+                last[1] = intervals[i][1];
+            }
+            else {
+                res.add(intervals[i]);
+            }
+        }
+
+        return res.toArray(new int[][]{});
     }
 }
