@@ -1,7 +1,6 @@
 package com.company;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class FindMode {
@@ -14,7 +13,7 @@ public class FindMode {
         node1.right = new TreeNode(2);
 
         int[] res = new FindMode().findMode(node1);
-        System.out.println("结果是: " + res);
+        System.out.println("结果是: " + res.toString());
     }
 
     public int[] findMode(TreeNode root) {
