@@ -2,14 +2,15 @@ package com.company;
 
 import netscape.security.UserTarget;
 
+import java.sql.Array;
 import java.util.*;
 import java.util.logging.Handler;
 
 public class Practice1Solution {
     public static void main(String[] args) {
-        int[] nums = new int[]{-2, 1, -3, 4, -1, 2, 1, -5, 4};
+        int[] nums = new int[]{-1,0,1,1,55};
         Practice1Solution solution = new Practice1Solution();
-        int res = solution.maxSubArray(nums);
+        List<String> res = solution.letterCombinations("23");
         System.out.printf("res " + res);
     }
     // 53. 最大子序和
@@ -447,7 +448,7 @@ public class Practice1Solution {
     // 9. 回文数
     public boolean isPalindrome(int x) {
         if (x == 0) return true;
-        if (x<0 || x % 10 == 0) return false;
+        if (x<0 || x % 10 == 0) return false; // 负数和大于10的数切尾数为0的情况, 返回false
 
         int n = 0;
         while (n < x) {
@@ -462,5 +463,286 @@ public class Practice1Solution {
 
     // 10. 正则表达式匹配
 
+    public boolean isMatch(String s, String p) {
+        boolean dp[][] = new boolean[p.length()+1][s.length()+1];
 
+        for(int j = 0;j<s.length();j++) {
+            dp[0][j]=false;
+        }
+        dp[0][0] = true;
+        for(int i = 1;i<p.length();i++) {
+            if (p.charAt(i-1) == '*') {
+                dp[i][0] = dp[i-2][0];
+            }
+        }
+
+        for(int j = 1;j<=s.length();j++) {
+            for(int i =1;i<= p.length();i++) {
+                if (p.charAt(i-1) == '*') {
+                    dp[i][j] = dp[i-2][j] || (dp[i][j-1] && (s.charAt(j-1) == p.charAt(i-2) || p.charAt(i-2)=='.'));
+                } else if (s.charAt(j-1)==p.charAt(i-1) || p.charAt(i-1)=='.') {
+                    dp[i][j]=dp[i-1][j-1];
+                } else {
+                    dp[i][j]=false;
+                }
+            }
+        }
+        return dp[p.length()][s.length()];
+    }
+
+    // 11. 盛最多水的容器
+
+    public int maxArea(int[] height) {
+        if (height == null || height.length <2) return 0;
+        int left = 0;
+        int right = height.length-1;
+        int res = 0;
+
+        while (left <= right) {
+            int h = Math.min(height[left], height[right]);
+            int area = (right - left) * h;
+            res = Math.max(res, area);
+            if (height[left] < height[right]) {
+                left ++;
+            } else {
+                right--;
+            }
+        }
+        return res;
+    }
+
+    // 12. 整数转罗马数字
+    public String intToRoman(int num) {
+        Map<Integer, String> map = new HashMap<>();
+        map.put(1000, "M");
+        map.put(900, "CM");
+        map.put(500, "D");
+        map.put(400, "CD");
+        map.put(100, "C");
+        map.put(90, "XC");
+        map.put(50, "L");
+        map.put(40, "XL");
+        map.put(10, "X");
+        map.put(9, "IX");
+        map.put(5, "V");
+        map.put(4, "IV");
+        map.put(1, "I");
+
+        int[] base = new int[]{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        int index = 0;
+
+        while (num > 0 && index < base.length) {
+            if (num >= base[index]) {
+                num -=base[index];
+                stringBuilder.append(map.get(base[index]));
+            } else {
+                index++;
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+    public String inToRoman2(int num) {
+        int[] values={1000,900,500,400,100,90,50,40,10,9,5,4,1};
+        String[] rom={"M","CM","D","CD","C","XC","L","XL","X","IX","V","IV","I"}; // 更快一些
+
+        StringBuilder sb=new StringBuilder();
+
+        for(int i=0;i<values.length;i++){
+            while(num>=values[i]){
+                sb.append(rom[i]);
+                num-=values[i];
+            }
+        }
+
+        return sb.toString();
+    }
+
+    // 13. 罗马数字转整数
+    public int romanToInt(String s) {
+        Map<Character, Integer> map = new HashMap<>();
+        map.put('I', 1);
+        map.put('V', 5);
+        map.put('X', 10);
+        map.put('L', 50);
+        map.put('C', 100);
+        map.put('D', 500);
+        map.put('M', 1000);
+
+        int res = 0;
+        for(int i = 0;i<s.length();i++) {
+            int a = map.get(s.charAt(i));
+            if (i < (s.length()-1) &&  a < map.get(s.charAt(i+1))) { // 前面值小于后面的话, 将当前值减去当前值
+                res -= a;
+            } else {
+                res += a;
+            }
+        }
+
+        return res;
+
+    }
+
+    // 14. 最长公共前缀
+    public String longestCommonPrefix(String[] strs) {
+        if (strs == null || strs.length == 0) return "";
+        String cur = strs[0]; // 取第一个字符串做为开始
+        int index = cur.length()-1;
+        for(String s : strs) { // 分别判定其他字符串, 依次判定相同的字符,
+            int i =0;
+            while(i < s.length() && i < cur.length() && cur.charAt(i) == s.charAt(i)) {
+                i++;
+            }
+            index = Math.min(index, i-1); // 找到最后相同字符位置
+        }
+        return cur.substring(0, index+1); // 截取公共前缀
+    }
+
+    // 15.三数之和
+    public List<List<Integer>> threeSum(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        if (nums.length <3) return res;
+
+        Arrays.sort(nums);
+
+        for(int i =0;i<nums.length-2 && nums[i]<=0;i++) {
+
+            if (i>0 && nums[i]==nums[i-1]) continue;
+
+            int left = i+1;
+            int right = nums.length-1;
+
+            while(left < right) {
+                int sum = nums[i] + nums[left] + nums[right];
+                if (sum == 0) {
+                    List<Integer> item = new ArrayList<>();
+                    item.add(nums[i]);
+                    item.add(nums[left]);
+                    item.add(nums[right]);
+                    res.add(item);
+                    while (left < right && nums[left] == nums[left+1]) {
+                        left ++;
+                    }
+                    while (left < right && nums[right] == nums[right-1]) {
+                        right --;
+                    }
+
+                    left ++;
+                    right --;  // 这里不能忘记, 上面的是去重, 这里才是取值后移动索引
+                } else if (sum > 0) {
+                    right--;
+                } else {
+                    left ++;
+                }
+            }
+        }
+        return res;
+
+    }
+
+    // 16. 最接近的三数之和
+    public int threeSumClosest(int[] nums, int target) {
+
+        Arrays.sort(nums);
+        int closet = Integer.MAX_VALUE;
+        int res =Integer.MAX_VALUE;
+
+        for (int i = 0; i < nums.length-2; i++) {
+//            if (i>0 && nums[i]==nums[i-1]) continue;  //不要去重
+
+            int left = i+1;
+            int right = nums.length-1;
+
+            while (left < right) {
+                int sum = nums[i] + nums[left] + nums[right];
+                if (sum == target) return target;
+                int a = Math.abs(sum-target);
+                if (a < closet) {
+                    closet = a;
+                    res = sum;
+                }
+                // 不要去重
+//                while (left < right && nums[left] == nums[left+1]) left ++;
+//                while (left < right && nums[right] == nums[right-1]) right --;
+
+                if (sum > target) {
+                    right--;
+                } else {
+                    left++;
+                }
+            }
+        }
+        return res;
+    }
+
+    // 17. 电话号码的字母组合
+    public List<String> letterCombinations(String digits) {
+        String[] map = new String[] {"", ",", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+        StringBuilder path = new StringBuilder();
+        List<String> res = new ArrayList<>();
+        backtrack17(digits, path, 0, map, res);
+        return res;
+
+    }
+
+    private void backtrack17(String digits, StringBuilder path, int start, String[] map, List<String> res) {
+        if (digits.length() == path.length()) { // 这里也可以用start的值来判定
+            res.add(path.toString());
+            return;
+        }
+
+        String str = map[digits.charAt(start) - '0']; // 使用start来表示当前处理的位置
+        for (char c : str.toCharArray()) {
+            path.append(c);
+            backtrack17(digits, path, start + 1, map, res); // 这里表示处理完当前, 处理下一个字符
+            path.deleteCharAt(path.length() - 1);
+        }
+
+    }
+
+    // 19. 删除链表的倒数第 N 个结点
+
+    public ListNode removeNthFromEnd(ListNode head, int n) {
+//        ListNode dummpNode = new ListNode(-1, head);
+//
+//        int count = 1; // 加上dummpNode 节点
+//        while(head != null) {
+//            count ++;
+//            head = head.next;
+//        }
+//
+//        int preIndex = count - n-1;
+//        ListNode L1= dummpNode;
+//        while(preIndex > 0) {
+//            L1 = L1.next;
+//            preIndex--;
+//        }
+//
+//        ListNode next = L1.next.next;
+//        L1.next = next;
+//        return dummpNode.next;
+
+        ListNode dummpNode = new ListNode(0, head);
+
+        ListNode h1 = dummpNode;
+        ListNode h2 = dummpNode;
+
+        while(n+1 > 0) {
+            h1 = h1.next;
+            n--;
+        }
+
+        while(h1 !=null) {
+            h1 = h1.next;
+            h2 = h2.next;
+        }
+
+        if (h2.next != null) {
+            h2.next = h2.next.next;
+        }
+        return dummpNode.next;
+    }
 }

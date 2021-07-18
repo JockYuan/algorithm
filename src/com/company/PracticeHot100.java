@@ -111,20 +111,20 @@ public class PracticeHot100 {
         }
         return r - l - 1; // // 返回字符串长度, 这时 left ,right,字母不等, 所以是right-left -1;
     }
-
+    // 动态规划
     public String longestPalindrome2(String s) {
         if (s == null || s.length() == 1) return s;
         int len = s.length();
-        boolean[][] dp = new boolean[len][len];
+        boolean[][] dp = new boolean[len][len]; // dp[i][j] 表示字符串[i,j] 是否是回文字符串
 
         for (int i = 0; i < len; i++) {
-            dp[i][i] = true;
+            dp[i][i] = true;  // 单个字符初始化为true
         }
         int maxLen = 1;
         int begin = 0;
-        for (int L = 2; L <= len; L++) {
-            for (int i = 0; i < len; i++) {
-                int j = i + L - 1;
+        for (int L = 2; L <= len; L++) { // 从长度遍历
+            for (int i = 0; i < len; i++) { // 左边界
+                int j = i + L - 1; // 计算出右边界
                 if (j >= len) {
                     break;
                 }
@@ -137,13 +137,13 @@ public class PracticeHot100 {
                         dp[i][j] = dp[i + 1][j - 1];
                     }
                     if (dp[i][j] && j - i + 1 > maxLen) {
-                        maxLen = j - i + 1;
+                        maxLen = j - i + 1; // 保存最大值, 和起始点的值
                         begin = i;
                     }
                 }
             }
         }
-        return s.substring(begin, begin + maxLen);
+        return s.substring(begin, begin + maxLen); // 获取回文字符串
     }
 
     // 6. Z 字形变换
@@ -191,8 +191,48 @@ public class PracticeHot100 {
     }
 
     //  8. 字符串转换整数 (atoi)
+    private int START = 0;
+    private int SIGNED = 1;
+    private int IN_NUMBER = 2;
+    private int END = 3;
     public int myAtoi(String s) {
-        return 0;
+        // 只用状态机
+        Map<Integer, int[]> map = new HashMap<>();
+        map.put(START, new int[]{START, SIGNED, IN_NUMBER, END});
+        map.put(SIGNED, new int[]{END, END, IN_NUMBER, END});
+        map.put(IN_NUMBER, new int[]{END, END, IN_NUMBER, END});
+        map.put(END, new int[]{END, END, END, END});
+
+        int curState = START;
+        long res = 0;
+        int signed = 0; // 符号, 0表示正值, -1表示负值
+        for(char c : s.toCharArray()) {
+            int state = getState(c);
+            curState = map.get(curState)[state];
+            if (curState == SIGNED) {
+                if (c=='-') signed = -1;
+            }
+            else if (curState == IN_NUMBER) {
+                res = res*10 + (c-'0');
+                if (signed == 0 && res > Integer.MAX_VALUE) { // 加入符号判定
+                    return Integer.MAX_VALUE;
+                }
+                if (-res < Integer.MIN_VALUE && signed == -1 ) { // 加入符合判定
+                    return Integer.MIN_VALUE;
+                }
+            } else if (curState == END) {
+                return (int) ((signed < 0)? -res : res);
+            }
+        }
+
+        return (int) ((signed < 0)? -res : res);
+    }
+
+    private int getState(char c) {
+        if (c == ' ') return START;
+        else if (c == '+' || c== '-') return SIGNED;
+        else if (c >= '0' && c <= '9') return IN_NUMBER;
+        else return END;
     }
 
     // 4. 寻找两个正序数组的中位数
@@ -206,22 +246,22 @@ public class PracticeHot100 {
         int median1 = 0;
         int median2 = 0;
 
-        while (left <= right) {
-            int i = left + (right - left) / 2;
-            int j = (m + n + 1) / 2 - i;
-            int num_im1 = (i == 0) ? Integer.MIN_VALUE : nums1[i - 1];
-            int num_i = (i == m) ? Integer.MAX_VALUE : nums1[i];
+        while (left <= right) { // 二分法
+            int i = left + (right - left) / 2; // 第一个数组中的中值
+            int j = (m + n + 1) / 2 - i; // 求出在第二个数组中的中值 , 使用m+n+1来保证 前一个分组在奇数的情况下多一个, 这样中值就是前一个分组的最后一个
+            int num_im1 = (i == 0) ? Integer.MIN_VALUE : nums1[i - 1]; // 在i=0时, 前一个用最小值表示
+            int num_i = (i == m) ? Integer.MAX_VALUE : nums1[i];  // 在i=m时, 用最大值表示最后一个
             int num_jm1 = (j == 0) ? Integer.MIN_VALUE : nums2[j - 1];
             int num_j = (j == n) ? Integer.MAX_VALUE : nums2[j];
-            if (num_im1 <= num_j) {
-                median1 = Math.max(num_im1, num_jm1);
+            if (num_im1 <= num_j) { // 判定条件
+                median1 = Math.max(num_im1, num_jm1); // 中值选择, 前一个分组的最大值, 后一个分组的最小值
                 median2 = Math.min(num_i, num_j);
                 left = i + 1;
             } else {
                 right = i - 1;
             }
         }
-        return (m + n) % 2 == 0 ? (median1 + median2) / 2.0 : median1;
+        return (m + n) % 2 == 0 ? (median1 + median2) / 2.0 : median1; // 偶数和奇数的情况
     }
 
     // 674. 最长连续递增序列
@@ -231,10 +271,10 @@ public class PracticeHot100 {
         int start = 0;
         int res = 0;
         for (int i = 0; i < len; i++) {
-            if (i > 0 && nums[i] <= nums[i - 1]) {
+            if (i > 0 && nums[i] <= nums[i - 1]) { // 如果当前值小于前一个,重置开始点start为当前值索引
                 start = i;
             }
-            res = Math.max(res, i - start + 1);
+            res = Math.max(res, i - start + 1); // 遍历过程中取最大值, 范围为[start, i];
         }
         return res;
     }
