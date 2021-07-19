@@ -1,16 +1,13 @@
 package com.company;
 
-import netscape.security.UserTarget;
-
-import java.sql.Array;
 import java.util.*;
-import java.util.logging.Handler;
 
 public class Practice1Solution {
     public static void main(String[] args) {
-        int[] nums = new int[]{-1,0,1,1,55};
+        int[] nums = new int[]{-1, 0, 1, 1, 55};
         Practice1Solution solution = new Practice1Solution();
-        List<String> res = solution.letterCombinations("23");
+//        List<String> res = solution.letterCombinations("23");
+        int res = solution.removeDupSum(nums);
         System.out.printf("res " + res);
     }
     // 53. 最大子序和
@@ -31,7 +28,7 @@ public class Practice1Solution {
         for (int n : nums) {
             sum += n;
             res = Math.max(res, sum); // 记录过程中的最大值
-            if (sum < 0) {
+            if (sum < 0) { // 当和为负值, 抛弃当前计算的和
                 sum = 0;
             }
         }
@@ -61,8 +58,8 @@ public class Practice1Solution {
         int index1 = m - 1;
         int index2 = n - 1;
         int indexMerge = m + n - 1;
-        while (index2 >= 0) {
-            if (index1 < 0) {
+        while (index2 >= 0) { // 使用较小的数组的索引判定是否结束, 表示将较小的数组加入较大的数组中
+            if (index1 < 0) { // 数组1 原值使用完毕后, 将数值2 全部赋值到数组1中
                 nums1[indexMerge--] = nums2[index2--];
             } else if (index2 < 0) {
                 nums1[indexMerge--] = nums1[index1--];
@@ -86,15 +83,16 @@ public class Practice1Solution {
 //        }
 //        return maxProfit;
 
+        // 贪心算法 ,
         int maxProfit = 0;
         if (prices.length <= 1) return 0;
 
         int minPrice = Integer.MAX_VALUE;
 
         for (int i = 0; i < prices.length; i++) {
-            if (prices[i] < minPrice) {
+            if (prices[i] < minPrice) {  // 取过程中最小的值
                 minPrice = prices[i];
-            } else if (prices[i] - minPrice > maxProfit) {
+            } else if (prices[i] - minPrice > maxProfit) {  // 求最大的利润
                 maxProfit = prices[i] - minPrice;
             }
         }
@@ -187,6 +185,7 @@ public class Practice1Solution {
         }
         return res;
     }
+
     // 138. 复制带随机指针的链表
     public Node copyRandomList(Node head) {
         if (head == null) {
@@ -196,7 +195,7 @@ public class Practice1Solution {
         Map<Node, Node> map = new HashMap<>();
 
         Node p1 = head;
-        while(p1 != null) {
+        while (p1 != null) {
             map.put(p1, new Node(p1.val));
             p1 = p1.next;
         }
@@ -204,7 +203,7 @@ public class Practice1Solution {
         p1 = head;
         Node dummp2 = new Node(-1);
         Node p2;
-        while(p1 != null) {
+        while (p1 != null) {
             p2 = map.get(p1);
             if (dummp2.next == null) {
                 dummp2.next = p2;
@@ -219,20 +218,25 @@ public class Practice1Solution {
 
     // 213. 打家劫舍 II
     public int rob(int[] nums) {
+        // 环形的话, 分别求, [0 ~ len-2], 或者 [1 ~ len-1] , 来处理 0 和 len-1 像连的问题.
         int len = nums.length;
         if (len == 1) {
             return nums[0];
         } else if (len == 2) {
             return Math.max(nums[0], nums[1]);
         } else {
-            return Math.max(robRange(nums, 0, len-2), robRange(nums, 1, len-1)); //环形的话,分成0,len-2, 和 1, len-1;
+            return Math.max(robRange(nums, 0, len - 2), robRange(nums, 1, len - 1)); //环形的话,分成0,len-2, 和 1, len-1;
         }
     }
 
     private int robRange(int[] nums, int start, int end) {
-        int pre2 = nums[start], pre1 = Math.max(nums[start], nums[start+1]);
-        for(int i = start+2 ; i<=end;i++) {
-            int tmp = Math.max(pre2+nums[i], pre1);
+        // dp[i] 表示第i个位置获取的金钱最多,
+        // dp[i] 来自dp[i-2] + nums[i] 或者 dp[i-1], 两个值取最大值, 即 dp[i] = max(dp[i-2]+nums[i], dp[i-1]);
+        // 初始化 dp[0] = nums[0]; dp[1] = max(nums[0], nums[1]);
+        // 压缩, 由于dp[i] 只需要dp[i-2] 和 dp[i-1]这两个值, 所以定义 pre2 = dp[i-2], pre1 = dp[i-1];
+        int pre2 = nums[start], pre1 = Math.max(nums[start], nums[start + 1]);
+        for (int i = start + 2; i <= end; i++) {
+            int tmp = Math.max(pre2 + nums[i], pre1);
             pre2 = pre1;
             pre1 = tmp;
         }
@@ -246,58 +250,62 @@ public class Practice1Solution {
         }
         int m = grid.length;
         int n = grid[0].length;
-        int[][] dp = new  int[m][n];
+        int[][] dp = new int[m][n]; // dp[i][j] 在i,j位置时的最小路径
         int sum = 0;
-        for(int i =0;i<n;i++) {
-            sum += grid[0][i];
-            dp[0][i]=sum;
+        for (int i = 0; i < n; i++) {
+            sum += grid[0][i]; // 初始化
+            dp[0][i] = sum;
         }
         sum = 0;
-        for(int j = 0;j<m;j++) {
+        for (int j = 0; j < m; j++) {
             sum += grid[j][0];
             dp[j][0] = sum;
         }
 
-        for(int i=1;i<m;i++) {
-            for(int j =1;j<n;j++) {
-                dp[i][j] = Math.min(dp[i-1][j], dp[i][j-1]) + grid[i][j];
+        // 开始递推计算, 从1开始
+        // dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + grid[i][j];
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1]) + grid[i][j];
             }
         }
-        return dp[m-1][n-1];
+        return dp[m - 1][n - 1]; // 返回右下角的值
 
     }
     // 303. 区域和检索 - 数组不可变 , 即前缀和
 
     int[] sums;
+
     public void NumArray(int[] nums) {
         int n = nums.length;
-        sums = new int[n+1];
-        for(int i =0;i<n;i++) {
-            sums[i+1] = sums[i]+nums[i];
+        sums = new int[n + 1]; // sums 长度定义问 len + 1;  sum[0] 保持初始值, sum[i] 保存的是 [0,i-1] 的和, 也可以看出 [0,i) 左闭右开
+        for (int i = 0; i < n; i++) {
+            sums[i + 1] = sums[i] + nums[i];
         }
 
     }
 
+    // [left, right] = sums[right+1] - sums[left];
     private int sumRange(int left, int right) {
-        return sums[right+1]-sums[left];
+        return sums[right + 1] - sums[left];
     }
 
     // 413. 等差数列划分
     public int numberOfArithmeticSlices(int[] nums) {
-        if (nums == null || nums.length<3) {
+        if (nums == null || nums.length < 3) {
             return 0;
         }
         int len = nums.length;
 
+        // dp[i] 以nums[i]结尾的等差列表个数 如, 3,4,5,6, 7 ; 以6 结尾的等差数列为 3456, 456,  那么以7结尾的等差数列为 34567, 4567, 567 , 即dp[i] = dp[i-1]+1;
         int[] dp = new int[len];
-
-        for(int i =2;i<len;i++) {
-            if(nums[i]-nums[i-1] == nums[i-1] - nums[i-2]) {
+        for (int i = 2; i < len; i++) {
+            if (nums[i] - nums[i - 1] == nums[i - 1] - nums[i - 2]) { // 当 nums[i] 满足等差要求时, 进行dp的递推迭代
                 dp[i] = dp[i - 1] + 1;
             }
         }
         int total = 0;
-        for(int c : dp) {
+        for (int c : dp) { // 求和, 求出所有的等差数列个数
             total += c;
         }
 
@@ -307,11 +315,11 @@ public class Practice1Solution {
     // 279. 完全平方数
     public int numSquares(int n) {
 //        List<Integer> squareList = generateSquareList(n);
-        int[] dp = new int[n+1];
-        for(int i =1;i<=n;i++) {
+        int[] dp = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
             int min = Integer.MAX_VALUE;
-            for (int j = 1;j*j<=i;j++) {
-                min = Math.min(min, dp[i-j*j]);
+            for (int j = 1; j * j <= i; j++) {
+                min = Math.min(min, dp[i - j * j]);
             }
             dp[i] = min;
         }
@@ -333,14 +341,14 @@ public class Practice1Solution {
     // 91. 解码方法
     public int numDecodings(String s) {
         int len = s.length();
-        int[] dp = new int[len+1];
+        int[] dp = new int[len + 1];
         dp[0] = 1;
-        for (int i = 1;i<=len;i++) {
-            if (s.charAt(i-1) != '0') {
-                dp[i] += dp[i-1];
+        for (int i = 1; i <= len; i++) {
+            if (s.charAt(i - 1) != '0') {
+                dp[i] += dp[i - 1];
             }
-            if (i>1 && s.charAt(i-2) != '0' && ((s.charAt(i-2)-'0') * 10 + s.charAt(i-1)-'0') <= 26) {
-                dp[i] += dp[i-2];
+            if (i > 1 && s.charAt(i - 2) != '0' && ((s.charAt(i - 2) - '0') * 10 + s.charAt(i - 1) - '0') <= 26) {
+                dp[i] += dp[i - 2];
             }
         }
         return dp[len];
@@ -355,16 +363,16 @@ public class Practice1Solution {
         int[] dp = new int[len];
         Arrays.fill(dp, 1);
 
-        for(int i=1;i<len;i++) {
-            for(int j = 0;j<i;j++) {
+        for (int i = 1; i < len; i++) {
+            for (int j = 0; j < i; j++) {
                 if (nums[i] > nums[j]) {
-                    dp[i] = Math.max(dp[i], dp[j]+1);
+                    dp[i] = Math.max(dp[i], dp[j] + 1);
                 }
             }
         }
 
         int res = 0;
-        for(int n:dp) {
+        for (int n : dp) {
             res = Math.max(res, n);
         }
 
@@ -375,16 +383,16 @@ public class Practice1Solution {
 
     public int lastStoneWeightII(int[] stones) {
         int sum = 0;
-        for(int n : stones) {
+        for (int n : stones) {
             sum += n;
         }
 
-        int t = sum /2;
+        int t = sum / 2;
 
-        int[] dp = new int[t+1];
-        for(int i = 0;i<stones.length;i++) {
-            for(int j = t; j>= stones[i];j--) {
-                dp[j] = Math.max(dp[j], dp[j-stones[i]] + stones[i]);
+        int[] dp = new int[t + 1];
+        for (int i = 0; i < stones.length; i++) {
+            for (int j = t; j >= stones[i]; j--) {
+                dp[j] = Math.max(dp[j], dp[j - stones[i]] + stones[i]);
             }
         }
         return sum - dp[t] - dp[t];
@@ -392,14 +400,14 @@ public class Practice1Solution {
 
     // 279. 完全平方数
     public int numSquares2(int n) {
-        int[] dp = new int[n+1];
-        dp[0]=0;
-        for(int i =0;i<n;i++) {
+        int[] dp = new int[n + 1];
+        dp[0] = 0;
+        for (int i = 0; i < n; i++) {
             int min = Integer.MAX_VALUE;
-            for(int j = 1; j*j <=i;j++) {
-                min = Math.min(min, dp[i-j*j]);
+            for (int j = 1; j * j <= i; j++) {
+                min = Math.min(min, dp[i - j * j]);
             }
-            dp[i] = min+1;
+            dp[i] = min + 1;
         }
         return dp[n];
     }
@@ -408,7 +416,7 @@ public class Practice1Solution {
     public int myAtoi(String s) {
         Map<String, String[]> map = new HashMap<>();
 
-        map.put("start", new String[] {"start", "signed", "in_number", "end"});
+        map.put("start", new String[]{"start", "signed", "in_number", "end"});
         map.put("signed", new String[]{"end", "end", "in_number", "end"});
         map.put("in_number", new String[]{"end", "end", "in_number", "end"});
         map.put("end", new String[]{"end", "end", "end", "end"});
@@ -417,43 +425,43 @@ public class Practice1Solution {
 
         long res = 0;
         int signed = 1; // 0 为负数, 1 为正数
-        for(char c: s.toCharArray()) {
+        for (char c : s.toCharArray()) {
             int st = getState(c);
             state = map.get(state)[st];
             if (state.equals("in_number")) {
-                res = res*10 + (c-'0');
+                res = res * 10 + (c - '0');
                 if (signed == 1 && res > Integer.MAX_VALUE) {
                     return Integer.MAX_VALUE;
                 }
-                if (signed == 0 && res -1 > Integer.MAX_VALUE) {
+                if (signed == 0 && res - 1 > Integer.MAX_VALUE) {
                     return Integer.MIN_VALUE;
                 }
 
-            } else if (state.equals("signed")){
+            } else if (state.equals("signed")) {
                 if (c == '-') signed = 0;
             } else if (state.equals("end")) {
-                return (int) ((signed == 1) ? res:-res);
+                return (int) ((signed == 1) ? res : -res);
             }
         }
-        return (int) ((signed == 1) ? res:-res);
+        return (int) ((signed == 1) ? res : -res);
     }
 
     private int getState(char c) {
-        if (c== ' ') return 0;
+        if (c == ' ') return 0;
         else if (c == '+' || c == '-') return 1;
-        else if (c>='0' && c <='9') return 2;
+        else if (c >= '0' && c <= '9') return 2;
         else return 3;
     }
 
     // 9. 回文数
     public boolean isPalindrome(int x) {
         if (x == 0) return true;
-        if (x<0 || x % 10 == 0) return false; // 负数和大于10的数切尾数为0的情况, 返回false
+        if (x < 0 || x % 10 == 0) return false; // 负数和大于10的数切尾数为0的情况, 返回false
 
         int n = 0;
         while (n < x) {
             int b = x % 10;
-            n = n*10+b; // 计算值用余数
+            n = n * 10 + b; // 计算值用余数
             x = x / 10; // 迭代条件变化 用除法
         }
 
@@ -464,26 +472,26 @@ public class Practice1Solution {
     // 10. 正则表达式匹配
 
     public boolean isMatch(String s, String p) {
-        boolean dp[][] = new boolean[p.length()+1][s.length()+1];
+        boolean dp[][] = new boolean[p.length() + 1][s.length() + 1];
 
-        for(int j = 0;j<s.length();j++) {
-            dp[0][j]=false;
+        for (int j = 0; j < s.length(); j++) {
+            dp[0][j] = false;
         }
         dp[0][0] = true;
-        for(int i = 1;i<p.length();i++) {
-            if (p.charAt(i-1) == '*') {
-                dp[i][0] = dp[i-2][0];
+        for (int i = 1; i < p.length(); i++) {
+            if (p.charAt(i - 1) == '*') {
+                dp[i][0] = dp[i - 2][0];
             }
         }
 
-        for(int j = 1;j<=s.length();j++) {
-            for(int i =1;i<= p.length();i++) {
-                if (p.charAt(i-1) == '*') {
-                    dp[i][j] = dp[i-2][j] || (dp[i][j-1] && (s.charAt(j-1) == p.charAt(i-2) || p.charAt(i-2)=='.'));
-                } else if (s.charAt(j-1)==p.charAt(i-1) || p.charAt(i-1)=='.') {
-                    dp[i][j]=dp[i-1][j-1];
+        for (int j = 1; j <= s.length(); j++) {
+            for (int i = 1; i <= p.length(); i++) {
+                if (p.charAt(i - 1) == '*') {
+                    dp[i][j] = dp[i - 2][j] || (dp[i][j - 1] && (s.charAt(j - 1) == p.charAt(i - 2) || p.charAt(i - 2) == '.'));
+                } else if (s.charAt(j - 1) == p.charAt(i - 1) || p.charAt(i - 1) == '.') {
+                    dp[i][j] = dp[i - 1][j - 1];
                 } else {
-                    dp[i][j]=false;
+                    dp[i][j] = false;
                 }
             }
         }
@@ -493,9 +501,9 @@ public class Practice1Solution {
     // 11. 盛最多水的容器
 
     public int maxArea(int[] height) {
-        if (height == null || height.length <2) return 0;
+        if (height == null || height.length < 2) return 0;
         int left = 0;
-        int right = height.length-1;
+        int right = height.length - 1;
         int res = 0;
 
         while (left <= right) {
@@ -503,7 +511,7 @@ public class Practice1Solution {
             int area = (right - left) * h;
             res = Math.max(res, area);
             if (height[left] < height[right]) {
-                left ++;
+                left++;
             } else {
                 right--;
             }
@@ -536,7 +544,7 @@ public class Practice1Solution {
 
         while (num > 0 && index < base.length) {
             if (num >= base[index]) {
-                num -=base[index];
+                num -= base[index];
                 stringBuilder.append(map.get(base[index]));
             } else {
                 index++;
@@ -546,15 +554,15 @@ public class Practice1Solution {
     }
 
     public String inToRoman2(int num) {
-        int[] values={1000,900,500,400,100,90,50,40,10,9,5,4,1};
-        String[] rom={"M","CM","D","CD","C","XC","L","XL","X","IX","V","IV","I"}; // 更快一些
+        int[] values = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+        String[] rom = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"}; // 更快一些
 
-        StringBuilder sb=new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
-        for(int i=0;i<values.length;i++){
-            while(num>=values[i]){
+        for (int i = 0; i < values.length; i++) {
+            while (num >= values[i]) {
                 sb.append(rom[i]);
-                num-=values[i];
+                num -= values[i];
             }
         }
 
@@ -573,9 +581,9 @@ public class Practice1Solution {
         map.put('M', 1000);
 
         int res = 0;
-        for(int i = 0;i<s.length();i++) {
+        for (int i = 0; i < s.length(); i++) {
             int a = map.get(s.charAt(i));
-            if (i < (s.length()-1) &&  a < map.get(s.charAt(i+1))) { // 前面值小于后面的话, 将当前值减去当前值
+            if (i < (s.length() - 1) && a < map.get(s.charAt(i + 1))) { // 前面值小于后面的话, 将当前值减去当前值
                 res -= a;
             } else {
                 res += a;
@@ -590,32 +598,32 @@ public class Practice1Solution {
     public String longestCommonPrefix(String[] strs) {
         if (strs == null || strs.length == 0) return "";
         String cur = strs[0]; // 取第一个字符串做为开始
-        int index = cur.length()-1;
-        for(String s : strs) { // 分别判定其他字符串, 依次判定相同的字符,
-            int i =0;
-            while(i < s.length() && i < cur.length() && cur.charAt(i) == s.charAt(i)) {
+        int index = cur.length() - 1;
+        for (String s : strs) { // 分别判定其他字符串, 依次判定相同的字符,
+            int i = 0;
+            while (i < s.length() && i < cur.length() && cur.charAt(i) == s.charAt(i)) {
                 i++;
             }
-            index = Math.min(index, i-1); // 找到最后相同字符位置
+            index = Math.min(index, i - 1); // 找到最后相同字符位置
         }
-        return cur.substring(0, index+1); // 截取公共前缀
+        return cur.substring(0, index + 1); // 截取公共前缀
     }
 
     // 15.三数之和
     public List<List<Integer>> threeSum(int[] nums) {
         List<List<Integer>> res = new ArrayList<>();
-        if (nums.length <3) return res;
+        if (nums.length < 3) return res;
 
         Arrays.sort(nums);
 
-        for(int i =0;i<nums.length-2 && nums[i]<=0;i++) {
+        for (int i = 0; i < nums.length - 2 && nums[i] <= 0; i++) {
 
-            if (i>0 && nums[i]==nums[i-1]) continue;
+            if (i > 0 && nums[i] == nums[i - 1]) continue;
 
-            int left = i+1;
-            int right = nums.length-1;
+            int left = i + 1;
+            int right = nums.length - 1;
 
-            while(left < right) {
+            while (left < right) {
                 int sum = nums[i] + nums[left] + nums[right];
                 if (sum == 0) {
                     List<Integer> item = new ArrayList<>();
@@ -623,19 +631,19 @@ public class Practice1Solution {
                     item.add(nums[left]);
                     item.add(nums[right]);
                     res.add(item);
-                    while (left < right && nums[left] == nums[left+1]) {
-                        left ++;
+                    while (left < right && nums[left] == nums[left + 1]) {
+                        left++;
                     }
-                    while (left < right && nums[right] == nums[right-1]) {
-                        right --;
+                    while (left < right && nums[right] == nums[right - 1]) {
+                        right--;
                     }
 
-                    left ++;
-                    right --;  // 这里不能忘记, 上面的是去重, 这里才是取值后移动索引
+                    left++;
+                    right--;  // 这里不能忘记, 上面的是去重, 这里才是取值后移动索引
                 } else if (sum > 0) {
                     right--;
                 } else {
-                    left ++;
+                    left++;
                 }
             }
         }
@@ -648,18 +656,18 @@ public class Practice1Solution {
 
         Arrays.sort(nums);
         int closet = Integer.MAX_VALUE;
-        int res =Integer.MAX_VALUE;
+        int res = Integer.MAX_VALUE;
 
-        for (int i = 0; i < nums.length-2; i++) {
+        for (int i = 0; i < nums.length - 2; i++) {
 //            if (i>0 && nums[i]==nums[i-1]) continue;  //不要去重
 
-            int left = i+1;
-            int right = nums.length-1;
+            int left = i + 1;
+            int right = nums.length - 1;
 
             while (left < right) {
                 int sum = nums[i] + nums[left] + nums[right];
                 if (sum == target) return target;
-                int a = Math.abs(sum-target);
+                int a = Math.abs(sum - target);
                 if (a < closet) {
                     closet = a;
                     res = sum;
@@ -680,7 +688,7 @@ public class Practice1Solution {
 
     // 17. 电话号码的字母组合
     public List<String> letterCombinations(String digits) {
-        String[] map = new String[] {"", ",", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
+        String[] map = new String[]{"", ",", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"};
         StringBuilder path = new StringBuilder();
         List<String> res = new ArrayList<>();
         backtrack17(digits, path, 0, map, res);
@@ -730,12 +738,12 @@ public class Practice1Solution {
         ListNode h1 = dummpNode;
         ListNode h2 = dummpNode;
 
-        while(n+1 > 0) {
+        while (n + 1 > 0) {
             h1 = h1.next;
             n--;
         }
 
-        while(h1 !=null) {
+        while (h1 != null) {
             h1 = h1.next;
             h2 = h2.next;
         }
@@ -744,5 +752,173 @@ public class Practice1Solution {
             h2.next = h2.next.next;
         }
         return dummpNode.next;
+    }
+
+    // 移除重复元素
+    public int removeDupSum(int[] nums) {
+        int slow = 0;
+        for (int i = 1; i < nums.length; i++) {
+            if (nums[slow] != nums[i]) { // 慢指针值不等快指针值 慢指针++
+                slow++;
+                nums[slow] = nums[i];
+            }
+        }
+        return slow + 1;
+    }
+
+    // 26. 删除有序数组中的重复项
+    public int removeDuplicates(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        if (nums.length == 1) {
+            return 1;
+        }
+        int i = 0;
+        for (int j = 1; j < nums.length; j++) {
+            if (nums[i] != nums[j]) { // 快指针指向值不等于要指定的值, 慢指针++,
+                i++;  // 慢指针++
+                nums[i] = nums[j]; // 快指针的值覆盖慢指针的值
+            }
+        }
+        return i + 1;
+    }
+
+    // 39. 组合总和
+    public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        List<List<Integer>> res = new ArrayList<>();
+        LinkedList<Integer> path = new LinkedList<>();
+        Arrays.sort(candidates);
+        backtracking39(candidates, target, path, 0, 0, res);
+        return res;
+    }
+
+    private void backtracking39(int[] candidates, int target, LinkedList<Integer> path, int sum, int startIndex, List<List<Integer>> res) {
+        if (target == sum) {
+            res.add(new ArrayList<>(path));
+            return;
+        }
+
+        for (int i = startIndex; i < candidates.length; i++) {
+            sum += candidates[i];
+            if (sum > target) break;
+            path.add(candidates[i]);
+            backtracking39(candidates, target, path, sum, i, res);
+            path.removeLast();
+            sum -= candidates[i];
+        }
+    }
+
+    // 977. 有序数组的平方
+    public int[] sortedSquares(int[] nums) {
+        int i = 0;
+        int j = nums.length - 1;
+        int k = nums.length - 1;
+        int[] res = new int[nums.length];
+
+        while (i <= j) { // 必须有 = 等号判定, 否则会遗漏一个值, 因为是[i,j] 左闭右闭
+            int a = nums[i] * nums[i];
+            int b = nums[j] * nums[j];
+            if (a > b) {
+                res[k--] = a;
+                i++;
+            } else {
+                res[k--] = b;
+                j--;
+            }
+        }
+        return res;
+    }
+
+    // 209.长度最小的子数组
+    // 使用滑动窗口
+    public int minSubArrayLen(int target, int[] nums) {
+        int res = Integer.MAX_VALUE;
+        int i = 0;
+        int sum = 0;
+        for (int j = 0; j < nums.length; j++) {
+            sum += nums[j];
+            while (sum >= target) { // 移动起始点来判定条件
+                sum -= nums[i];
+                int len = j - i + 1;  // 取长度
+                res = Math.min(len, res); // 取最小长度
+                i++;
+            }
+        }
+        return res == Integer.MAX_VALUE ? 0 : res;
+    }
+
+    // 20. 有效的括号
+    public boolean isValid(String s) {
+        if (s == null || s.length() < 2) return false;
+
+        Deque<Character> stack = new LinkedList<>();
+        for (char c : s.toCharArray()) {
+            if (c == '{') stack.push('}');
+            else if (c == '[') stack.push(']');
+            else if (c == '(') stack.push(')');
+            else {
+                if (!stack.isEmpty() && stack.peek() == c) {
+                    stack.pop();
+                } else {
+                    return false;
+                }
+            }
+        }
+        return stack.isEmpty();
+    }
+
+    // 21. 合并两个有序链表
+    public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        ListNode l3 = new ListNode(0);
+        ListNode dummp = l3;
+
+        while (l1 != null && l2 != null) {
+            if (l1.val < l2.val) {
+                l3.next = l1;
+                l1 = l1.next;
+            } else {
+                l3.next = l2;
+                l2 = l2.next;
+            }
+            l3 = l3.next;
+        }
+        if (l1 != null) {
+            l3.next = l1;
+        } else if (l2 != null){
+            l3.next = l2;
+        }
+        return dummp.next;
+    }
+
+    // 22. 括号生成
+    public List<String> generateParenthesis(int n) {
+        StringBuilder path = new StringBuilder();
+        List<String> res = new ArrayList<>();
+        backtracking22(path, 0, 0, n, res);
+        return res;
+    }
+
+    private void backtracking22(StringBuilder path, int left, int right, int max, List<String> res) {
+        if (path.length() == 2*max) {
+            res.add(path.toString());
+            return;
+        }
+
+        if (left < max) {
+            path.append("(");
+            backtracking22(path, left+1, right, max, res);
+            path.deleteCharAt(path.length()-1);
+        }
+        if (right < left) {
+            path.append(")");
+            backtracking22(path, left, right+1, max, res);
+            path.deleteCharAt(path.length()-1);
+        }
+    }
+
+    // 23. 合并K个升序链表
+    public ListNode mergeKLists(ListNode[] lists) {
+
     }
 }
