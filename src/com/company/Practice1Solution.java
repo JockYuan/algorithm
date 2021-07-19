@@ -919,6 +919,54 @@ public class Practice1Solution {
 
     // 23. 合并K个升序链表
     public ListNode mergeKLists(ListNode[] lists) {
+        if (lists == null || lists.length < 1) return null;
+
+        PriorityQueue<ListNode> queue = new PriorityQueue<>(lists.length, new Comparator<ListNode>() {
+            @Override
+            public int compare(ListNode o1, ListNode o2) {
+                return Integer.compare(o1.val, o2.val);
+            }
+        });
+
+        for(ListNode node: lists) {
+            if (node != null) { // 添加判空
+                queue.offer(node);
+            }
+        }
+
+        ListNode dummpNode = new ListNode(0);
+        ListNode tail = dummpNode;
+
+        while(!queue.isEmpty()) {
+            ListNode f = queue.poll();
+            tail.next = f;
+            tail = tail.next;
+            if (f.next != null) {
+                queue.offer(f.next);
+            }
+        }
+        return dummpNode.next;
+    }
+
+    // 91. 解码方法
+    public int numDecodings2(String s) {
+        int len = s.length();
+        int[] dp = new int[len+1]; // dp[i] 到i字符的解码方法数. dp[i] 当i为一个字符, dp[i]+=dp[i-1]; 当i和i-1两个字符满足解码, dp[i]+=dp[i-2];
+
+        // 初始化为0
+        Arrays.fill(dp, 0);
+
+        dp[0]=1;
+        for(int i=1;i<=len;i++) {
+            if (s.charAt(i) != '0') {
+                dp[i] += dp[i-1];
+            }
+            if (i>2 && s.charAt(i-2) != '0' && ((s.charAt(i-2)-'0') *10 + s.charAt(i-1)-'0') <= 26) {
+                dp[i] += dp[i-2];
+            }
+        }
+        return dp[len]; // 所有解码总数
+
 
     }
 }
