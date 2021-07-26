@@ -33,11 +33,21 @@ public class PracticeHot100 {
 
     // 1. 两数之和
     public int[] twoSum(int[] nums, int target) {
+//        Map<Integer, Integer> map = new HashMap<>();
+//        for (int i = 0; i < nums.length; i++) {
+//            int k = target - nums[i];
+//            if (map.containsKey(k)) {
+//                return new int[]{i, map.get(k)};
+//            }
+//            map.put(nums[i], i);
+//        }
+//        return null;
+
         Map<Integer, Integer> map = new HashMap<>();
-        for (int i = 0; i < nums.length; i++) {
-            int k = target - nums[i];
-            if (map.containsKey(k)) {
-                return new int[]{i, map.get(k)};
+        for(int i = 0;i<nums.length;i++) {
+            int a = target - nums[i];
+            if (map.containsKey(a)) {
+                return new int[]{i, map.get(a)};
             }
             map.put(nums[i], i);
         }
@@ -46,16 +56,36 @@ public class PracticeHot100 {
 
     // 2. 两数相加
     public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
-        ListNode d = new ListNode(-1);
-        ListNode l3 = d;
+//        ListNode d = new ListNode(-1);
+//        ListNode l3 = d;
+//        int carry = 0;
+//        while (l1 != null || l2 != null) {
+//            int v1 = (l1 == null) ? 0 : l1.val;
+//            int v2 = (l2 == null) ? 0 : l2.val;
+//            int sum = v1 + v2 + carry;
+//            carry = sum / 10;
+//            sum = sum % 10;
+//            l3.next = new ListNode(sum);
+//            if (l1 != null) l1 = l1.next;
+//            if (l2 != null) l2 = l2.next;
+//            l3 = l3.next;
+//        }
+//
+//        if (carry > 0) {
+//            l3.next = new ListNode(carry);
+//        }
+//        return d.next;
+        ListNode dummyNode = new ListNode(0);
+        ListNode l3 = dummyNode;
+
         int carry = 0;
-        while (l1 != null || l2 != null) {
-            int v1 = (l1 == null) ? 0 : l1.val;
-            int v2 = (l2 == null) ? 0 : l2.val;
-            int sum = v1 + v2 + carry;
-            carry = sum / 10;
-            sum = sum % 10;
-            l3.next = new ListNode(sum);
+        while(l1 != null || l2!=null) {
+            int a = (l1 == null)?0:l1.val;
+            int b = (l2 == null) ?0:l2.val;
+            int sum = a + b +carry;
+            int c = sum % 10;
+            carry = sum /10;
+            l3.next = new ListNode(c);
             if (l1 != null) l1 = l1.next;
             if (l2 != null) l2 = l2.next;
             l3 = l3.next;
@@ -64,86 +94,147 @@ public class PracticeHot100 {
         if (carry > 0) {
             l3.next = new ListNode(carry);
         }
-        return d.next;
+        return dummyNode.next;
     }
 
     // 3. 无重复字符的最长子串
     public int lengthOfLongestSubstring(String s) {
-        if (s == null || s.length() == 0) return 0;
-        if (s.length() == 1) return 1;
-        Map<Character, Integer> map = new HashMap<>();
-        int pre = -1;
+//        if (s == null || s.length() == 0) return 0;
+//        if (s.length() == 1) return 1;
+//        Map<Character, Integer> map = new HashMap<>();
+//        int pre = -1;
+//        int res = 0;
+//        for (int i = 0; i < s.length(); i++) {
+//            char c = s.charAt(i);
+//            if (map.containsKey(c)) {
+//                pre = Math.max(pre, map.get(c));
+//            }
+//            map.put(c, i);
+//            res = Math.max(res, i - pre); // i-pre 即为字符串长度, 因为map.get(c) 返回的是相同字符的下标, 下一个字符才是不同的字符
+//        }
+//        return res;
+
+        if (s == null || s.length() ==0) return 0;
+        if (s.length() <2) return 1;
         int res = 0;
+        int pre = -1;
+        Map<Character, Integer> map = new HashMap<>();
         for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (map.containsKey(c)) {
-                pre = Math.max(pre, map.get(c));
-            }
-            map.put(c, i);
-            res = Math.max(res, i - pre); // i-pre 即为字符串长度, 因为map.get(c) 返回的是相同字符的下标, 下一个字符才是不同的字符
+            pre = Math.max(pre, map.getOrDefault(s.charAt(i), -1));
+            res = Math.max(i - pre , res);
+            map.put(s.charAt(i), i);
         }
         return res;
     }
 
     // 5. 最长回文子串
     public String longestPalindrome(String s) {
-        if (s == null || s.length() == 1) return s;
+//        if (s == null || s.length() == 1) return s;
+//
+//        int maxLen = 1;
+//        int begin = 0;
+//        for (int i = 0; i < s.length(); i++) {
+//            int len1 = expandAroundCenter(s, i, i);
+//            int len2 = expandAroundCenter(s, i, i + 1);
+//            int len = Math.max(len1, len2);
+//            if (len > maxLen) {
+//                maxLen = len;
+//                begin = i - ((maxLen + 1) / 2) + 1;
+//            }
+//        }
+//        return s.substring(begin, begin + maxLen);
 
-        int maxLen = 1;
-        int begin = 0;
+        if (s.length() == 1) return s;
+
+        int maxLen = 0;
+        int begin =0;
         for (int i = 0; i < s.length(); i++) {
-            int len1 = expandAroundCenter(s, i, i);
-            int len2 = expandAroundCenter(s, i, i + 1);
+            int len1= expandAroundCenter(s,i,i);
+            int len2 = expandAroundCenter(s,i,i+1);
             int len = Math.max(len1, len2);
             if (len > maxLen) {
                 maxLen = len;
-                begin = i - ((maxLen + 1) / 2) + 1;
+                begin =  i - ((maxLen + 1) / 2) + 1; // 使用i-长度/2 +1;
             }
         }
-        return s.substring(begin, begin + maxLen);
+        return s.substring(begin, begin+maxLen);
 
     }
 
     private int expandAroundCenter(String s, int l, int r) {
         while (l >= 0 && r < s.length() && s.charAt(l) == s.charAt(r)) {
-            l++;
-            r--;
+            l--;
+            r++;
         }
         return r - l - 1; // // 返回字符串长度, 这时 left ,right,字母不等, 所以是right-left -1;
     }
     // 动态规划
     public String longestPalindrome2(String s) {
-        if (s == null || s.length() == 1) return s;
-        int len = s.length();
-        boolean[][] dp = new boolean[len][len]; // dp[i][j] 表示字符串[i,j] 是否是回文字符串
+//        if (s == null || s.length() == 1) return s;
+//        int len = s.length();
+//        boolean[][] dp = new boolean[len][len]; // dp[i][j] 表示字符串[i,j] 是否是回文字符串
+//
+//        for (int i = 0; i < len; i++) {
+//            dp[i][i] = true;  // 单个字符初始化为true
+//        }
+//        int maxLen = 1;
+//        int begin = 0;
+//        for (int L = 2; L <= len; L++) { // 从长度遍历
+//            for (int i = 0; i < len; i++) { // 左边界
+//                int j = i + L - 1; // 计算出右边界
+//                if (j >= len) {
+//                    break;
+//                }
+//                if (s.charAt(i) != s.charAt(j)) {
+//                    dp[i][j] = false;
+//                } else {
+//                    if (j - i < 3) {
+//                        dp[i][j] = true;
+//                    } else {
+//                        dp[i][j] = dp[i + 1][j - 1];
+//                    }
+//                    if (dp[i][j] && j - i + 1 > maxLen) {
+//                        maxLen = j - i + 1; // 保存最大值, 和起始点的值
+//                        begin = i;
+//                    }
+//                }
+//            }
+//        }
+//        return s.substring(begin, begin + maxLen); // 获取回文字符串
 
-        for (int i = 0; i < len; i++) {
-            dp[i][i] = true;  // 单个字符初始化为true
+        if(s.length() == 1) return s;
+
+        boolean[][] dp = new boolean[s.length()][s.length()];
+        for(int i = 0;i<s.length();i++) {
+            dp[i][i] = true;
         }
         int maxLen = 1;
-        int begin = 0;
-        for (int L = 2; L <= len; L++) { // 从长度遍历
-            for (int i = 0; i < len; i++) { // 左边界
-                int j = i + L - 1; // 计算出右边界
-                if (j >= len) {
-                    break;
-                }
+        int begin =0;
+
+        for(int L = 2; L <=s.length();L++) {
+            for(int i =0;i<s.length();i++) {
+                int j = i+L-1;
                 if (s.charAt(i) != s.charAt(j)) {
                     dp[i][j] = false;
                 } else {
-                    if (j - i < 3) {
+                    if (j-i <3) {
                         dp[i][j] = true;
                     } else {
-                        dp[i][j] = dp[i + 1][j - 1];
+                        dp[i][j] = dp[i+1][j-1];
+//                        if (dp[i][j] && j-i+1 > maxLen) { // 位置错误,
+//                            maxLen = j-i+1;
+//                            begin = i;
+//                        }
                     }
-                    if (dp[i][j] && j - i + 1 > maxLen) {
-                        maxLen = j - i + 1; // 保存最大值, 和起始点的值
+                    if (dp[i][j] && j-i+1 > maxLen) { // 正确位置, 上边位置遗漏了j-i <3 这种情况
+                        maxLen = j-i+1;
                         begin = i;
                     }
+
                 }
             }
         }
-        return s.substring(begin, begin + maxLen); // 获取回文字符串
+        return s.substring(begin,begin+maxLen);
     }
 
     // 6. Z 字形变换

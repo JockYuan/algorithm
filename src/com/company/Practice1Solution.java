@@ -885,7 +885,7 @@ public class Practice1Solution {
         }
         if (l1 != null) {
             l3.next = l1;
-        } else if (l2 != null){
+        } else if (l2 != null) {
             l3.next = l2;
         }
         return dummp.next;
@@ -900,20 +900,20 @@ public class Practice1Solution {
     }
 
     private void backtracking22(StringBuilder path, int left, int right, int max, List<String> res) {
-        if (path.length() == 2*max) {
+        if (path.length() == 2 * max) {
             res.add(path.toString());
             return;
         }
 
         if (left < max) {
             path.append("(");
-            backtracking22(path, left+1, right, max, res);
-            path.deleteCharAt(path.length()-1);
+            backtracking22(path, left + 1, right, max, res);
+            path.deleteCharAt(path.length() - 1);
         }
         if (right < left) {
             path.append(")");
-            backtracking22(path, left, right+1, max, res);
-            path.deleteCharAt(path.length()-1);
+            backtracking22(path, left, right + 1, max, res);
+            path.deleteCharAt(path.length() - 1);
         }
     }
 
@@ -928,7 +928,7 @@ public class Practice1Solution {
             }
         });
 
-        for(ListNode node: lists) {
+        for (ListNode node : lists) {
             if (node != null) { // 添加判空
                 queue.offer(node);
             }
@@ -937,7 +937,7 @@ public class Practice1Solution {
         ListNode dummpNode = new ListNode(0);
         ListNode tail = dummpNode;
 
-        while(!queue.isEmpty()) {
+        while (!queue.isEmpty()) {
             ListNode f = queue.poll();
             tail.next = f;
             tail = tail.next;
@@ -951,20 +951,338 @@ public class Practice1Solution {
     // 91. 解码方法
     public int numDecodings2(String s) {
         int len = s.length();
-        int[] dp = new int[len+1]; // dp[i] 到i字符的解码方法数. dp[i] 当i为一个字符, dp[i]+=dp[i-1]; 当i和i-1两个字符满足解码, dp[i]+=dp[i-2];
+        int[] dp = new int[len + 1]; // dp[i] 到i字符的解码方法数. dp[i] 当i为一个字符, dp[i]+=dp[i-1]; 当i和i-1两个字符满足解码, dp[i]+=dp[i-2];
 
         // 初始化为0
         Arrays.fill(dp, 0);
 
-        dp[0]=1;
-        for(int i=1;i<=len;i++) {
+        dp[0] = 1;
+        for (int i = 1; i <= len; i++) {
             if (s.charAt(i) != '0') {
-                dp[i] += dp[i-1];
+                dp[i] += dp[i - 1];
             }
-            if (i>2 && s.charAt(i-2) != '0' && ((s.charAt(i-2)-'0') *10 + s.charAt(i-1)-'0') <= 26) {
-                dp[i] += dp[i-2];
+            if (i > 2 && s.charAt(i - 2) != '0' && ((s.charAt(i - 2) - '0') * 10 + s.charAt(i - 1) - '0') <= 26) {
+                dp[i] += dp[i - 2];
             }
         }
         return dp[len]; // 所有解码总数
     }
+
+    // 42. 接雨水
+    public int trap(int[] height) {
+        int n = height.length;
+        if (n == 0) return 0;
+
+        int[] leftMax = new int[n];
+        leftMax[0] = height[0];
+        for (int i = 1; i < n; i++) {
+            leftMax[i] = Math.max(leftMax[i - 1], height[i]);
+        }
+
+        int[] rightMax = new int[n];
+        rightMax[n - 1] = height[n - 1];
+        for (int i = n - 2; i >= 0; i--) {
+            rightMax[i] = Math.max(rightMax[i + 1], height[i]);
+        }
+
+        int ans = 0;
+
+        for (int i = 0; i < n; i++) {
+            ans += Math.min(leftMax[i], rightMax[i]) - height[i];
+        }
+
+        return ans;
+    }
+
+    // 337. 打家劫舍 III
+    Map<TreeNode, Integer> f = new HashMap<>(); // 选取当前节点的最大抢劫值
+    Map<TreeNode, Integer> g = new HashMap<>(); // 不选当前节点的最大抢劫值
+
+    public int rob(TreeNode root) {
+        dfsRob(root);
+        return Math.max(f.getOrDefault(root, 0), g.getOrDefault(root, 0));
+    }
+
+    private void dfsRob(TreeNode root) {
+        if (root == null) {
+            return;
+        }
+        dfsRob(root.left);
+        dfsRob(root.right);
+        f.put(root, root.val + g.getOrDefault(root.left, 0) + g.getOrDefault(root.right, 0));
+        g.put(root, Math.max(f.getOrDefault(root.left, 0), g.getOrDefault(root.left, 0)) + Math.max(f.getOrDefault(root.right, 0), g.getOrDefault(root.right, 0)));
+    }
+
+    // 474. 一和零
+    public int findMaxForm(String[] strs, int m, int n) {
+        int[][] dp = new int[m + 1][n + 1];
+        int len = strs.length;
+        for (int i = 0; i < len; i++) {
+            int[] zeroOnes = getZeroOnes(strs[i]);
+            int zero = zeroOnes[0];
+            int ones = zeroOnes[1];
+            for (int j = m; j >= zero; j--) {
+                for (int k = n; k >= ones; k--) {
+                    dp[j][k] = Math.max(dp[j][k], dp[j - zero][k - ones] + 1);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
+    private int[] getZeroOnes(String str) {
+        int[] zerosOnes = new int[2];
+        for (char c : str.toCharArray()) {
+            zerosOnes[c - '0']++;
+        }
+        return zerosOnes;
+    }
+
+    // 79. 单词搜索
+    public boolean exist79(char[][] board, String word) {
+        int m = board.length;
+        int n = board[0].length;
+
+        boolean[][] visited = new boolean[m][n];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                boolean flag = check79(board, visited, i, j, word, 0);
+                if (flag) return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean check79(char[][] board, boolean[][] visited, int i, int j, String word, int k) {
+        if (board[i][j] != word.charAt(k)) {
+            return false;
+        }
+        if (word.length() - 1 == k) {
+            return true;
+        }
+
+        int[][] direction = new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        visited[i][j] = true;
+        boolean result = false;
+        for (int[] dir : direction) {
+            int newI = i + dir[0];
+            int newJ = j + dir[1];
+
+            if (newI >= 0 && newI < board.length && newJ >= 0 && newJ < board[0].length && !visited[newI][newJ]) {
+
+                boolean flag = check79(board, visited, newI, newJ, word, k + 1);
+                if (flag) {
+                    result = true;
+                    break;
+                }
+            }
+
+        }
+        visited[i][j] = false;
+        return result;
+
+    }
+
+    // 494. 目标和
+    // 回溯 算法
+    public int findTargetSumWays(int[] nums, int target) {
+        int sum = 0;
+        for (int n : nums) {
+            sum += n;
+        }
+
+        if (target > sum) return 0;
+        if ((target + sum) % 2 != 0) return 0;
+
+        int bagSize = (sum + target) / 2;
+
+        List<List<Integer>> res = new ArrayList<>();
+        LinkedList<Integer> path = new LinkedList<>();
+        Arrays.sort(nums);
+        backtracking494(nums, bagSize, 0, 0, path, res);
+
+        return res.size();
+    }
+
+    private void backtracking494(int[] nums, int target, int sum, int startIndex, LinkedList<Integer> path, List<List<Integer>> res) {
+        if (target == sum) {
+            res.add(new ArrayList<>(path));
+            // return;  有重复的情况, 不用return;
+        }
+
+        for (int i = startIndex; i < nums.length && sum + nums[i] <= target; i++) {
+            sum += nums[i];
+            path.addLast(nums[i]);
+            backtracking494(nums, target, sum, i + 1, path, res);
+            path.removeLast();
+            sum -= nums[i];
+        }
+    }
+
+    // 动态规划
+    public int findTargetSumWays2(int[] nums, int target) {
+        int sum = 0;
+        for (int n : nums) {
+            sum += n;
+        }
+
+        if (target > sum) return 0;
+        if ((target + sum) % 2 != 0) return 0;
+
+        int bagSize = (sum + target) / 2;
+
+        int[] dp = new int[bagSize + 1]; // dp[i]表示凑够i数值, 有多少种方法
+        dp[0] = 1; // 凑够0,有一种方法
+
+        // 递推公式
+        // dp[j] += dp[j-nums[i]];
+
+        for (int i = 0; i < nums.length; i++) {
+            for (int j = bagSize; j >= nums[i]; j--) {
+                dp[j] += dp[j - nums[i]];
+            }
+        }
+        return dp[bagSize];
+
+    }
+
+    // 121. 买卖股票的最佳时机
+
+    public int maxProfit2(int[] prices) {
+
+        int len = prices.length;
+        int[] dp1 = new int[len]; // 持有股票的现金
+        int[] dp2 = new int[len]; // 不持有股票的现金
+
+        dp1[0] = -prices[0];
+        dp2[0] = 0;
+
+        for (int i = 1; i < len; i++) {
+            dp1[i] = Math.max(dp1[i - 1], -prices[i]); // 买卖一次
+            dp2[i] = Math.max(dp2[i - 1], prices[i] + dp1[i - 1]);
+        }
+
+        return dp2[len - 1];
+    }
+
+    // 122. 买卖股票的最佳时机 II
+    // 买卖多次
+
+    public int maxProfitII(int[] prices) {
+        int len = prices.length;
+
+        int maxProfit = 0;
+        // 贪心算法
+        for (int i = 1; i < len; i++) {
+            maxProfit += Math.max(0, prices[i] - prices[i - 1]);
+        }
+        return maxProfit;
+    }
+
+    public int maxProfitII_2(int[] prices) {
+        int len = prices.length;
+        int[] dp1 = new int[len]; // 持有股票的现金
+        int[] dp2 = new int[len]; // 不持有股票的现金
+
+        dp1[0] = -prices[0];
+        dp2[0] = 0;
+
+        for (int i = 1; i < len; i++) {
+            dp1[i] = Math.max(dp1[i-1], dp2[i-1] - prices[i]);
+            dp2[i] = Math.max(dp2[i-1],  dp1[i-1] + prices[i]);
+        }
+
+        return dp2[len-1];
+    }
+
+    // 123. 买卖股票的最佳时机 III
+    public int maxProfitIII(int[] prices) {
+        int len = prices.length;
+        // 定义四种状态, 买入1, 卖出1, 买入2, 卖出2,
+        int buy1 = -prices[0];
+        int buy2 = -prices[0];
+        int sell1 = 0;
+        int sell2 = 0;
+
+        for(int i = 0;i<len;i++) {
+            buy1 = Math.max(buy1, -prices[i]); // 递推公式
+            buy2 = Math.max(buy2, sell1 - prices[i]);
+            sell1 = Math.max(sell1, buy1+prices[i]);
+            sell2 = Math.max(sell2, buy2 + prices[i]);
+        }
+
+        return sell2;
+
+    }
+
+    // 300. 最长递增子序列
+
+    public int lengthOfLTS(int[] nums) {
+        int[] dp = new int[nums.length];
+        Arrays.fill(dp, 1);
+
+        for(int i = 1;i<nums.length;i++) {
+            for(int j =0;j<i;j++) {
+                if (nums[i]>nums[j]) {
+                    dp[i] =Math.max(dp[i], dp[j] + 1);
+                }
+            }
+        }
+        int res = 0;
+        for(int n : dp) {
+            res = Math.max(res, n);
+        }
+        return res;
+    }
+
+    // 674. 最长连续递增序列
+    public int findLengthOfLCIS(int[] nums) {
+        // 动态规划
+        int[] dp = new int[nums.length];
+        Arrays.fill(dp, 1);
+        for(int i =0;i<nums.length-1;i++) {
+            if (nums[i+1] > nums[i]) {
+                dp[i+1] = dp[i] + 1;
+            }
+        }
+
+        return dp[nums.length-1];
+    }
+
+    public int findLengthOfLCIS2(int[] nums) {
+        // 贪心
+        int len = nums.length;
+
+        int res = 0;
+        int start = 0;
+
+        for(int i =0;i<len;i++) {
+            if (i>0 && nums[i]<= nums[i-1]) {
+                start = i; //保存一个最小的为开始值
+            }
+            res = Math.max(res, i-start+1);
+        }
+        return res;
+    }
+
+    // 718. 最长重复子数组
+
+    public int findLength(int[] nums1, int[] nums2) {
+        int m = nums1.length;
+        int n = nums2.length;
+
+        int[][] dp = new int[m+1][n+1]; // dp[i][j]表示 nums1 中以i-1结尾的和 nums2中以 j-1结尾的字符串 重复的子数组长度
+        int res = 0;
+        for(int i = 1;i<=m ;i++) {
+            for(int j = 1; j<=n;j++) {
+                if (nums1[i] == nums2[j]) {
+                    dp[i][j] = dp[i-1][j-1]+1;
+                }
+                res = Math.max(res, dp[i][j]);
+            }
+        }
+
+        return res;
+    }
+
 }
