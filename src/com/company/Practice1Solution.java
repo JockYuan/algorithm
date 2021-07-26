@@ -966,7 +966,5 @@ public class Practice1Solution {
             }
         }
         return dp[len]; // 所有解码总数
-
-
     }
 }
